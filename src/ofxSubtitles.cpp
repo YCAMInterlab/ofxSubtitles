@@ -7,6 +7,7 @@
 //  @The Studio for Creative Inquiry
 
 #include <iostream>
+#include "ofxSubtitles.h"
 
 /*----------------------------------------------------------------------------
  
@@ -19,7 +20,7 @@ void SubtitleUnit::setIndex(int i){
 }
 
 
-void SubtitleUnit::getIndex(){
+int SubtitleUnit::getIndex(){
     return index;
 }
 
@@ -44,38 +45,38 @@ long SubtitleUnit::getEndTime(){
 }
 
 
-bool SubtitleUnit::setTitles(vector<ofUTF8String> phrases){
-    if(phrases.size() < 3){
-        text = words;
+bool SubtitleUnit::setTitles(vector<ofUTF8String> subtitleStrings){
+    if(subtitleStrings.size() < MAX_LINES_PER_SUB_UNIT){
+        text = subtitleStrings;
         return true;
     }
     else return false;
 }
 
 
-bool SubtitleUnit::addTitle(ofUTF8String phrase){
-    if(text.size() < 2){
-        text.push_back(phrase);
+bool SubtitleUnit::addTitle(ofUTF8String subtitleString){
+    if(text.size() < MAX_LINES_PER_SUB_UNIT){
+        text.push_back(subtitleString);
         return true;
     }
     else return false;
 }
 
 
-UTF8String SubtitleUnit::removeTitle(int i){
+ofUTF8String SubtitleUnit::removeTitle(int i){
     if(i > (text.size() - 1) || i < 0){
         ofLogError("Title index out of bounds.");
         return NULL;
     }
     else{
-        UTF8String removedTitle = text[i];
-        text.erase(i);
+        ofUTF8String removedTitle = text[i];
+        text.erase(text.begin()+i); // myvector.begin()+5
         return removedTitle;
     }
 }
 
 
-vector<UTF8String> SubtitleUnit::getText(){
+vector<ofUTF8String> SubtitleUnit::getLines(){
     return text;
 }
 
@@ -86,7 +87,6 @@ void SubtitleUnit::print(){
     
     for(int i = 0; i < text.size(); i++){
         cout << text[i] << endl;
-        cout << endl;
     }
     
     cout << endl;
@@ -98,6 +98,10 @@ void SubtitleUnit::print(){
  
  ---------------------------------------------------------------------------*/
 
+ofxSubtitles::ofxSubtitles(){
+    
+}
+
 ofxSubtitles::ofxSubtitles(string subPath, string fontPath, int fontSize, int fps){
     subsLoaded = loadSubs(subPath);
     font.loadFont(fontPath, fontSize);
@@ -105,43 +109,50 @@ ofxSubtitles::ofxSubtitles(string subPath, string fontPath, int fontSize, int fp
 }
 
 ofxSubtitles::~ofxSubtitles(){
-    
-}
 
+}
 
 bool ofxSubtitles::loadSubs(string path){
     srtFile = ofBufferFromFile(path);
     
-    if(srtFile = NULL || (path.substr(path.length - 4, 4).compare(".srt") != 0)){
+    bool isNotSRTFile = (path.substr(path.length() - 4, 4).compare(".srt") != 0);
+    
+    if(&srtFile == NULL || isNotSRTFile){
         ofLogError("Invalid subtitle file path. Check to see if you misspelled the path, that the file does not exist, or that the file is not a .srt");
         subsLoaded = false;
     }
-    else{
-        ofUTF8String line = srtFile.getFirstLine();
+    else{ 
         while(!srtFile.isLastLine()){
+            
+            //Assign the subtitle unit its index number
+            ofUTF8String srtLine = srtFile.getNextLine();
             SubtitleUnit title;
-            title.setIndex = int(line);
+            title.setIndex(ofToInt(srtLine));
             
             //Fill the new subtitle struct with its start and end times
-            line = srtFile.getNextLine();
-            vector<string> times = ofSplitString(line, " ");
-            title.setStartTime(timecode.millisForMSTimecode(times[0]));
-            title.setEndTime(timecode.millisForMSTimecode(times[2]));
-            line = srtFile.getNextLine();
+            srtLine = srtFile.getNextLine();
+            vector<string> times = ofSplitString(srtLine, " ");
+            //cout << "\"" << times[0] << "\"" << endl;
+            //cout << "\"" << times[2] << "\"" << endl;
+            title.setStartTime(timecode.millisForTimecode(times[0]));
+            title.setEndTime(timecode.millisForTimecode(times[2]));
+            
+            srtLine = srtFile.getNextLine();
             
             //Add each spoken line to the subtitle struct
-            while(line.compare("") == 0){
-                title.addTitle(line);
-                line = srtFile.getNextLine();
+            while(!srtLine.empty()){
+                title.addTitle(srtLine);
+                srtLine = srtFile.getNextLine();
             }
             
             subtitleList.push_back(title);
-            line = srtFile.getNextLine(); //This should be the number of the next subtitle in the .srt,
-                                            //or empty if the end of the buffer has been reached.
         }
-        
         subsLoaded = true;
     }
+}
+
+void ofxSubtitles::setJustification(textJustification j){
+        subsJustification = j;
 }
 
 
@@ -177,26 +188,114 @@ void ofxSubtitles::setFramesPerSecond(int fps){
 
 void ofxSubtitles::setTime(long milliseconds){
     currentTime = milliseconds;
+    
+    int minInd = 0, maxInd = subtitleList.size() - 1;
+
+    //If there is no currently displayed subtitle or the milliseconds parameter falls 
+    //outside the scope of the current subtitle, search the list
+    
+    bool pastCurrentTime = (currentlyDisplayedSub->getStartTime() >= milliseconds );
+    bool beforeCurrentTime = (currentlyDisplayedSub->getEndTime() <= milliseconds );
+    
+    if(currentlyDisplayedSub == NULL || pastCurrentTime || beforeCurrentTime){
+
+        currentlyDisplayedSub = searchSubtitleList(minInd, maxInd, milliseconds);
+    }
 }
 
 
 void ofxSubtitles::setTime(float seconds){
-    currentTime = seconds * 1000;
+    setTime(seconds * 1000);
 }
 
-//PLEASE MAKE SURE that you have your frame rate set correctly!
+//PLEASE MAKE SURE that you have your frame rate set correctly in timeCode!
 void ofxSubtitles::setTime(int frames){
-    currentTime = timeCode.millisForFrame(frames);
+    setTime(timecode.millisForFrame(frames));
 }
 
 void ofxSubtitles::setFadeInterval(long milliseconds){
     fadeTime = milliseconds;
 }
 
-void ofxSubtitles::draw(float x, float y){
+//A binary search algorithm for finding a subtitle that should be displaying during the
+//specified time. While the datasets are probably small enough that an iterative search
+//would do alright, every little bit helps!
+SubtitleUnit *ofxSubtitles::searchSubtitleList(int minIndex, int maxIndex, long elapsedTime){
     
+    while(minIndex >= maxIndex){
+            
+        int midIndex = (maxIndex - minIndex)/2 + minIndex;
+        
+        if(subtitleList[midIndex].getEndTime() <= elapsedTime){
+            
+            minIndex = midIndex + 1;
+        }
+        else if(subtitleList[midIndex].getStartTime() >= elapsedTime){
+            
+            maxIndex = midIndex - 1;
+        }
+        else{
+
+            return &(subtitleList[midIndex]);
+        }
+        
+    }
+    
+    return NULL;
 }
 
-void ofxSubtitles::draw(ofPoint p, int w, int h){
+//Due to the nature of subtitles, this function is designed with the assumption that you
+//want to draw text relative to the center of the screen, and will input center x-coordinates
+void ofxSubtitles::drawToScreen(float x, float y){
     
+    bool canDraw = font.isLoaded() && !(currentlyDisplayedSub == NULL);
+    
+    if(subsJustification == TEXT_JUSTIFICATION_LEFT && canDraw){
+        
+        vector<ofUTF8String> subLines = currentlyDisplayedSub->getLines();
+        
+        for(int i = 0; i < subLines.size(); i++){
+            textBounds = font.getStringBoundingBox(subLines[i], 0, 0);
+            
+            if(i == 0){
+                font.drawString(subLines[i], x - textBounds.width, y);
+            }
+            else{
+                font.drawString(subLines[i], x - textBounds.width, y + font.getLineHeight());
+            }
+        }
+        
+    }
+    else if(subsJustification == TEXT_JUSTIFICATION_CENTER && canDraw){
+        
+        vector<ofUTF8String> subLines = currentlyDisplayedSub->getLines();
+        
+        for(int i = 0; i < subLines.size(); i++){
+            textBounds = font.getStringBoundingBox(subLines[i], 0, 0);
+            
+            if(i == 0){
+                font.drawString(subLines[i], x - textBounds.width/2, y);
+            }
+            else{
+                font.drawString(subLines[i], x - textBounds.width/2, y + font.getLineHeight());
+            }
+        }
+        
+    }
+//    else if(subsJustification == RIGHT && canDraw){
+//        
+//        vector<UTF8String> text = currentlyDisplayedSub.getLines();
+//        
+//        for(int i = 0; i < currentlyDisplayedSub.getLines().size(); i++){
+//            textBounds = font.getStringBoundingBox(text[i], 0, 0);
+//            
+//            if(i == 0){
+//                font.drawString(text[i], x - textBounds.width, drawPoint.y);
+//            }
+//            else{
+//                font.drawString(text[i], x - textBounds.width, drawPoint.y + font.getLineHeight());
+//            }
+//        }
+//    }
 }
+
