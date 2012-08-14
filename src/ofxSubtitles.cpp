@@ -102,10 +102,12 @@ ofxSubtitles::ofxSubtitles(){
     
 }
 
-ofxSubtitles::ofxSubtitles(string subPath, string fontPath, int fontSize, int fps){
+ofxSubtitles::ofxSubtitles(string subPath, string fontPath, int fontSize, int fps,
+                           textJustification j){
     subsLoaded = loadSubs(subPath);
     font.loadFont(fontPath, fontSize);
     setFramesPerSecond(fps);
+    setJustification(j);
 }
 
 ofxSubtitles::~ofxSubtitles(){
@@ -194,12 +196,17 @@ void ofxSubtitles::setTime(long milliseconds){
     //If there is no currently displayed subtitle or the milliseconds parameter falls 
     //outside the scope of the current subtitle, search the list
     
-    bool pastCurrentTime = (currentlyDisplayedSub->getStartTime() >= milliseconds );
-    bool beforeCurrentTime = (currentlyDisplayedSub->getEndTime() <= milliseconds );
-    
-    if(currentlyDisplayedSub == NULL || pastCurrentTime || beforeCurrentTime){
-
+    if(currentlyDisplayedSub == NULL){
         currentlyDisplayedSub = searchSubtitleList(minInd, maxInd, milliseconds);
+    }
+    else{
+        bool pastCurrentTime = (currentlyDisplayedSub->getStartTime() >= milliseconds );
+        bool beforeCurrentTime = (currentlyDisplayedSub->getEndTime() <= milliseconds );
+        
+        if(pastCurrentTime || beforeCurrentTime){
+            currentlyDisplayedSub = searchSubtitleList(minInd, maxInd, milliseconds);
+
+        }
     }
 }
 
@@ -249,7 +256,7 @@ SubtitleUnit *ofxSubtitles::searchSubtitleList(int minIndex, int maxIndex, long 
 void ofxSubtitles::drawToScreen(float x, float y){
     
     bool canDraw = font.isLoaded() && !(currentlyDisplayedSub == NULL);
-    
+    cout << font.isLoaded() << endl;
     if(subsJustification == TEXT_JUSTIFICATION_LEFT && canDraw){
         
         vector<ofUTF8String> subLines = currentlyDisplayedSub->getLines();

@@ -60,7 +60,7 @@ class ofxSubtitles {
 
 public:
     ofxSubtitles();
-    ofxSubtitles(string subPath, string fontPath, int fontSize, int fps);
+    ofxSubtitles(string subPath, string fontPath, int fontSize, int fps, textJustification j);
     ~ofxSubtitles();
     
     bool loadSubs(string path); //Constructs subtitle vector 
@@ -84,7 +84,6 @@ public:
     void drawToScreen(float x, float y);
     
     ofTrueTypeFont font;
-    vector<SubtitleUnit> subtitleList;
     
 protected:
     
@@ -94,7 +93,7 @@ protected:
     long currentTime; //In milliseconds
     
     ofBuffer srtFile;
-    
+    vector<SubtitleUnit> subtitleList;    
     textJustification subsJustification;
     SubtitleUnit *currentlyDisplayedSub;
     
