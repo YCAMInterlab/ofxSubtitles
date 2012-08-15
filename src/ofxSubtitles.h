@@ -11,8 +11,9 @@
 #include <iostream>
 #include "ofMain.h"
 #include "ofxTimecode.h"
-#include "ofUnicode.h"
-
+//#include "ofUnicode.h"
+#include "ofxFTGLFont.h"
+#define ofUTF8String string
 #define MAX_LINES_PER_SUB_UNIT 2
 
 
@@ -25,7 +26,7 @@ enum ofxSubtitleJustification {
 
 class SubtitleUnit{
 
-public:
+  public:
     
     //Set the index of the SubtitleUnit within a larger set of
     //SubtitleUnits
@@ -57,6 +58,7 @@ protected:
     long startTime; //in milliseconds
     long endTime; //in milliseconds
     vector<ofUTF8String> text; //Size limited to max of 2
+    //vector<string> text; //Size limited to max of 2
 };
 
 
@@ -64,38 +66,40 @@ class ofxSubtitles {
 
 public:
     ofxSubtitles();
-//    ofxSubtitles(string subPath, string fontPath, int fontSize, int fps, textJustification j);
     ~ofxSubtitles();
     bool setup(string subPath, string fontPath, int fontSize = 12, int fps = 30, ofxSubtitleJustification j =  TEXT_JUSTIFICATION_CENTER);
     
     bool loadSubs(string path); //Constructs subtitle vector 
-//  bool loadFont(string path, int fontsize); //Simple font load
-//  bool loadFont(string path, int fontsize, bool antiAliased, bool fullCharacterSet, 
-//                bool makeContours, bool simplifyAmt, int dpi); //More detailed font load
     
     
     void setJustification(ofxSubtitleJustification j);
     void setFramesPerSecond(int fps); //Timecode's default fps is 30
-    void setTimeInMillseconds(long milliseconds);
-    void setTimeInSeconds(float seconds);
-    void setTimeInFrames(int frames);
     void setFadeInterval(long milliseconds);
     
+    //returns true if there are titles for this moment
+    bool setTimeInMillseconds(long milliseconds);
+    bool setTimeInSeconds(float seconds);
+    bool setTimeInFrames(int frames);
+
+    //will return true once the very first time after a new title has been st
+    bool isTitleNew();
+
     //Creates a basic, non-bolded/italicized/underlined subtitle
     //void insertSubtitle(string startTime, string endTime, ofUTF8String subtitleText);
     //Allows you control over bolding, italics, and underlines
     //void insertSubtitle(string startTime, string endTime, ofUTF8String subtitleText, bool bold, bool ital, bool underl);
     //void removeSubtitle(int subtitleNumber); 
-    void drawToScreen(float x, float y);
+    void draw(float x, float y);
+    void draw(ofPoint point);
     
-    ofTrueTypeFont font;
+    ofxFTGLFont font;
     
 protected:
-    
     string filepath;
     bool subsLoaded;
     long fadeTime; //In milliseconds
     long currentTime; //In milliseconds
+    bool newTitle;
     
     ofBuffer srtFile;
     vector<SubtitleUnit> subtitleList;    
