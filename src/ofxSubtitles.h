@@ -12,7 +12,8 @@
 #include "ofMain.h"
 #include "ofxTimecode.h"
 #include "ofUnicode.h"
-
+#include "ofxFTGLFont.h"
+//#define ofUTF8String string
 #define MAX_LINES_PER_SUB_UNIT 2
 
 
@@ -57,6 +58,7 @@ protected:
     long startTime; //in milliseconds
     long endTime; //in milliseconds
     vector<ofUTF8String> text; //Size limited to max of 2
+    //vector<string> text; //Size limited to max of 2
 };
 
 
@@ -88,7 +90,7 @@ public:
     //void removeSubtitle(int subtitleNumber); 
     void drawToScreen(float x, float y);
     
-    ofTrueTypeFont font;
+    ofxFTGLFont font;
     
 protected:
     

@@ -128,6 +128,7 @@ bool ofxSubtitles::loadSubs(string path){
             
             //Assign the subtitle unit its index number
             ofUTF8String srtLine = srtFile.getNextLine();
+            
             SubtitleUnit title;
             title.setIndex(ofToInt(srtLine));
             
@@ -138,7 +139,7 @@ bool ofxSubtitles::loadSubs(string path){
             //cout << "\"" << times[2] << "\"" << endl;
             title.setStartTime(timecode.millisForTimecode(times[0]));
             title.setEndTime(timecode.millisForTimecode(times[2]));
-            
+
             srtLine = srtFile.getNextLine();
             
             //Add each spoken line to the subtitle struct
@@ -147,8 +148,11 @@ bool ofxSubtitles::loadSubs(string path){
                 srtLine = srtFile.getNextLine();
             }
             
+            
             subtitleList.push_back(title);
         }
+        cout << "subtitleList size is " << subtitleList.size() << endl;
+        
         subsLoaded = true;
     }
 }
@@ -197,7 +201,12 @@ void ofxSubtitles::setTimeInMillseconds(long milliseconds){
     //outside the scope of the current subtitle, search the list
     
     if(currentlyDisplayedSub == NULL){
-        currentlyDisplayedSub = searchSubtitleList(minInd, maxInd, milliseconds);
+		for(int i = 0; i < subtitleList.size(); i++){
+            if(subtitleList[i].getStartTime() < milliseconds && subtitleList[i].getEndTime() >= milliseconds){
+                currentlyDisplayedSub = &subtitleList[i];
+                break;
+            }
+        }
     }
     else{
         bool pastCurrentTime = (currentlyDisplayedSub->getStartTime() >= milliseconds );
@@ -282,6 +291,7 @@ void ofxSubtitles::drawToScreen(float x, float y){
             
             if(i == 0){
                 font.drawString(subLines[i], x - textBounds.width/2, y);
+                //font.drawString("からビデオで相手の顔を見ながら話せる",  x - textBounds.width/2, y);
             }
             else{
                 font.drawString(subLines[i], x - textBounds.width/2, y + font.getLineHeight());
