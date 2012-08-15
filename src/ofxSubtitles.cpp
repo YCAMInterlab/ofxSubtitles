@@ -99,11 +99,11 @@ void SubtitleUnit::print(){
  ---------------------------------------------------------------------------*/
 
 ofxSubtitles::ofxSubtitles(){
-    
+    currentlyDisplayedSub = NULL;
 }
 
-ofxSubtitles::ofxSubtitles(string subPath, string fontPath, int fontSize, int fps,
-                           textJustification j){
+//ofxSubtitles::ofxSubtitles(string subPath, string fontPath, int fontSize, int fps, textJustification j){
+bool ofxSubtitles::setup(string subPath, string fontPath, int fontSize, int fps, ofxSubtitleJustification j){
     subsLoaded = loadSubs(subPath);
     font.loadFont(fontPath, fontSize);
     setFramesPerSecond(fps);
@@ -153,7 +153,7 @@ bool ofxSubtitles::loadSubs(string path){
     }
 }
 
-void ofxSubtitles::setJustification(textJustification j){
+void ofxSubtitles::setJustification(ofxSubtitleJustification j){
         subsJustification = j;
 }
 
@@ -188,7 +188,7 @@ void ofxSubtitles::setFramesPerSecond(int fps){
 }
        
 
-void ofxSubtitles::setTime(long milliseconds){
+void ofxSubtitles::setTimeInMillseconds(long milliseconds){
     currentTime = milliseconds;
     
     int minInd = 0, maxInd = subtitleList.size() - 1;
@@ -211,13 +211,13 @@ void ofxSubtitles::setTime(long milliseconds){
 }
 
 
-void ofxSubtitles::setTime(float seconds){
-    setTime(seconds * 1000);
+void ofxSubtitles::setTimeInSeconds(float seconds){
+    setTimeInMillseconds(seconds * 1000);
 }
 
 //PLEASE MAKE SURE that you have your frame rate set correctly in timeCode!
-void ofxSubtitles::setTime(int frames){
-    setTime(timecode.millisForFrame(frames));
+void ofxSubtitles::setTimeInFrames(int frames){
+    setTimeInMillseconds(timecode.millisForFrame(frames));
 }
 
 void ofxSubtitles::setFadeInterval(long milliseconds){
@@ -256,7 +256,7 @@ SubtitleUnit *ofxSubtitles::searchSubtitleList(int minIndex, int maxIndex, long 
 void ofxSubtitles::drawToScreen(float x, float y){
     
     bool canDraw = font.isLoaded() && !(currentlyDisplayedSub == NULL);
-    cout << font.isLoaded() << endl;
+
     if(subsJustification == TEXT_JUSTIFICATION_LEFT && canDraw){
         
         vector<ofUTF8String> subLines = currentlyDisplayedSub->getLines();
