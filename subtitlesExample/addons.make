@@ -1,3 +1,0 @@
-ofxSubtitles
-ofxTimecode
-ofxUnicode
