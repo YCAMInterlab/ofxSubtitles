@@ -99,13 +99,13 @@ void SubtitleUnit::print(){
  ---------------------------------------------------------------------------*/
 
 ofxSubtitles::ofxSubtitles(){
-    
+    currentlyDisplayedSub = NULL;
 }
 
-ofxSubtitles::ofxSubtitles(string subPath, string fontPath, int fontSize, int fps,
-                           textJustification j){
+//ofxSubtitles::ofxSubtitles(string subPath, string fontPath, int fontSize, int fps, textJustification j){
+bool ofxSubtitles::setup(string subPath, string fontPath, int fontSize, int fps, ofxSubtitleJustification j){
     subsLoaded = loadSubs(subPath);
-    font->loadFont(fontPath, fontSize, true, true);
+    font.loadFont(fontPath, fontSize);
     setFramesPerSecond(fps);
     setJustification(j);
 }
@@ -153,7 +153,7 @@ bool ofxSubtitles::loadSubs(string path){
     }
 }
 
-void ofxSubtitles::setJustification(textJustification j){
+void ofxSubtitles::setJustification(ofxSubtitleJustification j){
         subsJustification = j;
 }
 
@@ -188,7 +188,7 @@ void ofxSubtitles::setFramesPerSecond(int fps){
 }
        
 
-void ofxSubtitles::setTime(long milliseconds){
+void ofxSubtitles::setTimeInMillseconds(long milliseconds){
     currentTime = milliseconds;
     
     int minInd = 0, maxInd = subtitleList.size() - 1;
@@ -211,13 +211,13 @@ void ofxSubtitles::setTime(long milliseconds){
 }
 
 
-void ofxSubtitles::setTime(float seconds){
-    setTime(seconds * 1000);
+void ofxSubtitles::setTimeInSeconds(float seconds){
+    setTimeInMillseconds(seconds * 1000);
 }
 
 //PLEASE MAKE SURE that you have your frame rate set correctly in timeCode!
-void ofxSubtitles::setTime(int frames){
-    setTime(timecode.millisForFrame(frames));
+void ofxSubtitles::setTimeInFrames(int frames){
+    setTimeInMillseconds(timecode.millisForFrame(frames));
 }
 
 void ofxSubtitles::setFadeInterval(long milliseconds){
@@ -255,20 +255,20 @@ SubtitleUnit *ofxSubtitles::searchSubtitleList(int minIndex, int maxIndex, long 
 //want to draw text relative to the center of the screen, and will input center x-coordinates
 void ofxSubtitles::drawToScreen(float x, float y){
     
-    bool canDraw = font->isLoaded() && !(currentlyDisplayedSub == NULL);
-    cout << font->isLoaded() << endl;
+    bool canDraw = font.isLoaded() && !(currentlyDisplayedSub == NULL);
+
     if(subsJustification == TEXT_JUSTIFICATION_LEFT && canDraw){
         
         vector<ofUTF8String> subLines = currentlyDisplayedSub->getLines();
         
         for(int i = 0; i < subLines.size(); i++){
-            textBounds = font->getStringBoundingBox(subLines[i], 0, 0);
+            textBounds = font.getStringBoundingBox(subLines[i], 0, 0);
             
             if(i == 0){
-                font->drawString(subLines[i], x - textBounds.width, y);
+                font.drawString(subLines[i], x - textBounds.width, y);
             }
             else{
-                font->drawString(subLines[i], x - textBounds.width, y + font->getLineHeight());
+                font.drawString(subLines[i], x - textBounds.width, y + font.getLineHeight());
             }
         }
         
@@ -278,13 +278,13 @@ void ofxSubtitles::drawToScreen(float x, float y){
         vector<ofUTF8String> subLines = currentlyDisplayedSub->getLines();
         
         for(int i = 0; i < subLines.size(); i++){
-            textBounds = font->getStringBoundingBox(subLines[i], 0, 0);
+            textBounds = font.getStringBoundingBox(subLines[i], 0, 0);
             
             if(i == 0){
-                font->drawString(subLines[i], x - textBounds.width/2, y);
+                font.drawString(subLines[i], x - textBounds.width/2, y);
             }
             else{
-                font->drawString(subLines[i], x - textBounds.width/2, y + font->getLineHeight());
+                font.drawString(subLines[i], x - textBounds.width/2, y + font.getLineHeight());
             }
         }
         

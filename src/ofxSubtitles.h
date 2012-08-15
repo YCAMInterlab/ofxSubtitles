@@ -16,7 +16,11 @@
 #define MAX_LINES_PER_SUB_UNIT 2
 
 
-enum textJustification { TEXT_JUSTIFICATION_LEFT, TEXT_JUSTIFICATION_CENTER, TEXT_JUSTIFICATION_RIGHT };
+enum ofxSubtitleJustification {
+    TEXT_JUSTIFICATION_LEFT,
+    TEXT_JUSTIFICATION_CENTER,
+    TEXT_JUSTIFICATION_RIGHT
+};
 
 
 class SubtitleUnit{
@@ -60,8 +64,9 @@ class ofxSubtitles {
 
 public:
     ofxSubtitles();
-    ofxSubtitles(string subPath, string fontPath, int fontSize, int fps, textJustification j);
+//    ofxSubtitles(string subPath, string fontPath, int fontSize, int fps, textJustification j);
     ~ofxSubtitles();
+    bool setup(string subPath, string fontPath, int fontSize = 12, int fps = 30, ofxSubtitleJustification j =  TEXT_JUSTIFICATION_CENTER);
     
     bool loadSubs(string path); //Constructs subtitle vector 
 //  bool loadFont(string path, int fontsize); //Simple font load
@@ -69,11 +74,11 @@ public:
 //                bool makeContours, bool simplifyAmt, int dpi); //More detailed font load
     
     
-    void setJustification(textJustification j);
+    void setJustification(ofxSubtitleJustification j);
     void setFramesPerSecond(int fps); //Timecode's default fps is 30
-    void setTime(long milliseconds);
-    void setTime(float seconds);
-    void setTime(int frames);
+    void setTimeInMillseconds(long milliseconds);
+    void setTimeInSeconds(float seconds);
+    void setTimeInFrames(int frames);
     void setFadeInterval(long milliseconds);
     
     //Creates a basic, non-bolded/italicized/underlined subtitle
@@ -83,7 +88,7 @@ public:
     //void removeSubtitle(int subtitleNumber); 
     void drawToScreen(float x, float y);
     
-    ofTrueTypeFont* font;
+    ofTrueTypeFont font;
     
 protected:
     
@@ -94,7 +99,7 @@ protected:
     
     ofBuffer srtFile;
     vector<SubtitleUnit> subtitleList;    
-    textJustification subsJustification;
+    ofxSubtitleJustification subsJustification;
     SubtitleUnit *currentlyDisplayedSub;
     
     ofRectangle textBounds;
