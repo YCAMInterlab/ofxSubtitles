@@ -135,8 +135,7 @@ bool ofxSubtitles::loadSubs(string path){
             //Fill the new subtitle struct with its start and end times
             srtLine = srtFile.getNextLine();
             vector<string> times = ofSplitString(srtLine, " ");
-            //cout << "\"" << times[0] << "\"" << endl;
-            //cout << "\"" << times[2] << "\"" << endl;
+
             if(times.size() < 3){
             	ofLogError("ofxSubtitles") << "Error parsing file " << path << " on line " << title.getIndex() << endl;
                 continue;
@@ -162,33 +161,7 @@ void ofxSubtitles::setJustification(ofxSubtitleJustification j){
         subsJustification = j;
 }
 
-
-//void ofxSubtitles::loadFont(string path, int fontsize){
-//    font.loadFont(path, fontsize);
-//    
-//    if(!font.isLoaded()){
-//        ofLogError("Invalid font file path. Check to see if you misspelled the path, that the file does not exist, or that the file is not a .srt");
-//
-//        fontLoaded = false;
-//    }
-//    else subsLoaded = true;
-//}
-//
-//
-//bool ofxSubtitles::loadFont(string path, int fontsize, bool antiAliased, bool fullCharacterSet, 
-//                            bool makeContours, bool simplifyAmt, int dpi){
-//    
-//    font.loadFont(path, fontsize, antiAliased, fullCharacterSet, makeContours, 
-//                  simplifyAmt, dpi);
-//    
-//    if(!font.isLoaded()){
-//        ofLogError("Invalid font file path. Check to see if you misspelled the path, or that the file does not exist.");
-//        return false;
-//    }
-//    else return true;
-//}
-
-void ofxSubtitles::setFramesPerSecond(int fps){
+void ofxSubtitles::setFramesPerSecond(float fps){
     timecode.setFPS(fps);
 }
        
@@ -197,7 +170,7 @@ bool ofxSubtitles::isTitleNew(){
     return newTitle;
 }
 
-bool ofxSubtitles::setTimeInMillseconds(long milliseconds){
+bool ofxSubtitles::setTimeInMilliseconds(long milliseconds){
     currentTime = milliseconds;
     
     int minInd = 0, maxInd = subtitleList.size() - 1;
@@ -229,12 +202,12 @@ bool ofxSubtitles::setTimeInMillseconds(long milliseconds){
 
 
 bool ofxSubtitles::setTimeInSeconds(float seconds){
-    return setTimeInMillseconds(seconds * 1000);
+    return setTimeInMilliseconds(seconds * 1000);
 }
 
 //PLEASE MAKE SURE that you have your frame rate set correctly in timeCode!
 bool ofxSubtitles::setTimeInFrames(int frames){
-    return setTimeInMillseconds(timecode.millisForFrame(frames));
+    return setTimeInMilliseconds(timecode.millisForFrame(frames));
 }
 
 void ofxSubtitles::setFadeInterval(long milliseconds){
@@ -246,7 +219,7 @@ void ofxSubtitles::setFadeInterval(long milliseconds){
 //would do alright, every little bit helps!
 SubtitleUnit *ofxSubtitles::searchSubtitleList(int minIndex, int maxIndex, long elapsedTime){
     
-    while(minIndex >= maxIndex){
+    while(minIndex <= maxIndex){
             
         int midIndex = (maxIndex - minIndex)/2 + minIndex;
         

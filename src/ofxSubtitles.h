@@ -73,11 +73,11 @@ public:
     
     
     void setJustification(ofxSubtitleJustification j);
-    void setFramesPerSecond(int fps); //Timecode's default fps is 30
+    void setFramesPerSecond(float fps); //Timecode's default fps is 30
     void setFadeInterval(long milliseconds);
     
     //returns true if there are titles for this moment
-    bool setTimeInMillseconds(long milliseconds);
+    bool setTimeInMilliseconds(long milliseconds);
     bool setTimeInSeconds(float seconds);
     bool setTimeInFrames(int frames);
 
@@ -91,14 +91,14 @@ public:
     //void removeSubtitle(int subtitleNumber); 
     void draw(float x, float y);
     void draw(ofPoint point);
-    
+    long currentTime; 
     ofxFTGLFont font;
     
 protected:
     string filepath;
     bool subsLoaded;
     long fadeTime; //In milliseconds
-    long currentTime; //In milliseconds
+    //long currentTime; //In milliseconds
     bool newTitle;
     
     ofBuffer srtFile;
