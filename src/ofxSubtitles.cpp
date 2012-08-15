@@ -137,6 +137,10 @@ bool ofxSubtitles::loadSubs(string path){
             vector<string> times = ofSplitString(srtLine, " ");
             //cout << "\"" << times[0] << "\"" << endl;
             //cout << "\"" << times[2] << "\"" << endl;
+            if(times.size() < 3){
+            	ofLogError("ofxSubtitles") << "Error parsing file " << path << " on line " << title.getIndex() << endl;
+                continue;
+            }
             title.setStartTime(timecode.millisForTimecode(times[0]));
             title.setEndTime(timecode.millisForTimecode(times[2]));
 
@@ -147,12 +151,9 @@ bool ofxSubtitles::loadSubs(string path){
                 title.addTitle(srtLine);
                 srtLine = srtFile.getNextLine();
             }
-            
-            
+
             subtitleList.push_back(title);
-        }
-        cout << "subtitleList size is " << subtitleList.size() << endl;
-        
+        }        
         subsLoaded = true;
     }
 }
@@ -191,16 +192,21 @@ void ofxSubtitles::setFramesPerSecond(int fps){
     timecode.setFPS(fps);
 }
        
+//will return true once the very first time after a new title has been st
+bool ofxSubtitles::isTitleNew(){
+    return newTitle;
+}
 
-void ofxSubtitles::setTimeInMillseconds(long milliseconds){
+bool ofxSubtitles::setTimeInMillseconds(long milliseconds){
     currentTime = milliseconds;
     
     int minInd = 0, maxInd = subtitleList.size() - 1;
 
+    bool titleAlreadyShowing = currentlyDisplayedSub != NULL;
     //If there is no currently displayed subtitle or the milliseconds parameter falls 
     //outside the scope of the current subtitle, search the list
     
-    if(currentlyDisplayedSub == NULL){
+    if(!titleAlreadyShowing){
 		for(int i = 0; i < subtitleList.size(); i++){
             if(subtitleList[i].getStartTime() < milliseconds && subtitleList[i].getEndTime() >= milliseconds){
                 currentlyDisplayedSub = &subtitleList[i];
@@ -214,19 +220,21 @@ void ofxSubtitles::setTimeInMillseconds(long milliseconds){
         
         if(pastCurrentTime || beforeCurrentTime){
             currentlyDisplayedSub = searchSubtitleList(minInd, maxInd, milliseconds);
-
         }
     }
+    
+    newTitle = (currentlyDisplayedSub != NULL && !titleAlreadyShowing);
+    return currentlyDisplayedSub != NULL;
 }
 
 
-void ofxSubtitles::setTimeInSeconds(float seconds){
-    setTimeInMillseconds(seconds * 1000);
+bool ofxSubtitles::setTimeInSeconds(float seconds){
+    return setTimeInMillseconds(seconds * 1000);
 }
 
 //PLEASE MAKE SURE that you have your frame rate set correctly in timeCode!
-void ofxSubtitles::setTimeInFrames(int frames){
-    setTimeInMillseconds(timecode.millisForFrame(frames));
+bool ofxSubtitles::setTimeInFrames(int frames){
+    return setTimeInMillseconds(timecode.millisForFrame(frames));
 }
 
 void ofxSubtitles::setFadeInterval(long milliseconds){
@@ -260,9 +268,13 @@ SubtitleUnit *ofxSubtitles::searchSubtitleList(int minIndex, int maxIndex, long 
     return NULL;
 }
 
+void ofxSubtitles::draw(ofPoint point){
+    draw(point.x,point.y);
+}
+
 //Due to the nature of subtitles, this function is designed with the assumption that you
 //want to draw text relative to the center of the screen, and will input center x-coordinates
-void ofxSubtitles::drawToScreen(float x, float y){
+void ofxSubtitles::draw(float x, float y){
     
     bool canDraw = font.isLoaded() && !(currentlyDisplayedSub == NULL);
 
