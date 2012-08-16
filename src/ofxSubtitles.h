@@ -6,71 +6,38 @@
 //  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
 //  @the Studio for Creative Inquiry
 
-#ifndef _ofxSubtitles_h
-#define _ofxSubtitles_h
-#include <iostream>
+
+
+#pragma once
+
 #include "ofMain.h"
 #include "ofxTimecode.h"
-//#include "ofUnicode.h"
+#include "ofxSubtitleUnit.h"
+
+//uncomment this to use FTGL for font rendering, which allos for Unicode such as Japanese
+#define USE_FTGL
+
+#ifdef USE_FTGL
 #include "ofxFTGLFont.h"
-#define ofUTF8String string
-#define MAX_LINES_PER_SUB_UNIT 2
-
-
-enum ofxSubtitleJustification {
-    TEXT_JUSTIFICATION_LEFT,
-    TEXT_JUSTIFICATION_CENTER,
-    TEXT_JUSTIFICATION_RIGHT
-};
-
-
-class SubtitleUnit{
-
-  public:
-    
-    //Set the index of the SubtitleUnit within a larger set of
-    //SubtitleUnits
-    void setIndex(int i);
-    int getIndex();
-    
-    //Set and get start and end times
-    void setStartTime(long millis);
-    long getStartTime();    
-    
-    void setEndTime(long millis);
-    long getEndTime();
-    
-    //Give the SubtitleUnit titles to store for access later
-    bool setTitles(vector<ofUTF8String> words);
-    bool addTitle(ofUTF8String word);
-    
-    //Remove the ith title from the SubtitleUnit - the removed
-    //string is returned upon success
-    ofUTF8String removeTitle(int i);
-    
-    //Get every title contained in the SubtitleUnit
-    vector<ofUTF8String> getLines();
-    
-    void print(); //Debug function
-    
-protected:
-    int index;
-    long startTime; //in milliseconds
-    long endTime; //in milliseconds
-    vector<ofUTF8String> text; //Size limited to max of 2
-    //vector<string> text; //Size limited to max of 2
-};
-
+#endif
 
 class ofxSubtitles {
 
-public:
+  public:
     ofxSubtitles();
     ~ofxSubtitles();
-    bool setup(string subPath, string fontPath, int fontSize = 12, int fps = 30, ofxSubtitleJustification j =  TEXT_JUSTIFICATION_CENTER);
     
-    bool loadSubs(string path); //Constructs subtitle vector 
+    void setup(string fontPath, int fontSize = 12, int fps = 30, ofxSubtitleJustification j =  TEXT_JUSTIFICATION_CENTER);
+    void setup(string subPath, string fontPath, int fontSize = 12, int fps = 30, ofxSubtitleJustification j =  TEXT_JUSTIFICATION_CENTER);
+    void loadFont(string path, int fontsize);
     
+    bool load(string path); //Constructs subtitle vector
+    bool save();  //saves any changes to the same file that was load
+    bool save(string path); //saves changes to a new file, does not affect filePath
+    
+    vector<ofxSubtitleUnit>& getSubtitles();
+    
+    ofxSubtitleUnit* addSubtitle(long startTime, long endTime, string titleLine1, string titleLine2);
     
     void setJustification(ofxSubtitleJustification j);
     void setFramesPerSecond(int fps); //Timecode's default fps is 30
@@ -81,9 +48,14 @@ public:
     bool setTimeInSeconds(float seconds);
     bool setTimeInFrames(int frames);
 
+    long getDurationInMillis();
+    float getDurationInSeconds();
+    
     //will return true once the very first time after a new title has been st
     bool isTitleNew();
 
+    string getFilepath();
+    
     //Creates a basic, non-bolded/italicized/underlined subtitle
     //void insertSubtitle(string startTime, string endTime, ofUTF8String subtitleText);
     //Allows you control over bolding, italics, and underlines
@@ -92,9 +64,13 @@ public:
     void draw(float x, float y);
     void draw(ofPoint point);
     
+	#ifdef USE_FTGL
     ofxFTGLFont font;
+	#else
+    ofTrueTypeFont font;
+	#endif
     
-protected:
+  protected:
     string filepath;
     bool subsLoaded;
     long fadeTime; //In milliseconds
@@ -102,16 +78,14 @@ protected:
     bool newTitle;
     
     ofBuffer srtFile;
-    vector<SubtitleUnit> subtitleList;    
+    vector<ofxSubtitleUnit> subtitleList;    
     ofxSubtitleJustification subsJustification;
-    SubtitleUnit *currentlyDisplayedSub;
+    ofxSubtitleUnit *currentlyDisplayedSub;
     
     ofRectangle textBounds;
     
     ofxTimecode timecode;
 
-    SubtitleUnit* searchSubtitleList(int minIndex, int maxIndex, long elapsedTime);
+    ofxSubtitleUnit* searchSubtitleList(int minIndex, int maxIndex, long elapsedTime);
 };
 
-
-#endif
