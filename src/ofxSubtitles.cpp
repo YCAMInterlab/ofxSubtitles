@@ -115,7 +115,7 @@ bool ofxSubtitles::save(string path){
     }
     ofBuffer saveBuffer;
 	ss >> saveBuffer;
-    cout << "buffer!! " << ss << endl;
+    cout << "buffer!! " << ss.str() << endl;
 	return ofBufferToFile(ofToDataPath(path), saveBuffer, false);
 }
 
