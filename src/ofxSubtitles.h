@@ -94,6 +94,8 @@ public:
     
     ofxFTGLFont font;
     
+    int getNumTitles();
+    
 protected:
     string filepath;
     bool subsLoaded;
