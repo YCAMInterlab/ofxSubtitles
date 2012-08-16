@@ -70,7 +70,11 @@ class ofxSubtitles {
     ofTrueTypeFont font;
 	#endif
     
+
+    int getNumTitles();
+    
   protected:
+
     string filepath;
     bool subsLoaded;
     long fadeTime; //In milliseconds
