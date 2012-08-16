@@ -40,11 +40,11 @@ class ofxSubtitles {
     ofxSubtitleUnit* addSubtitle(long startTime, long endTime, string titleLine1, string titleLine2);
     
     void setJustification(ofxSubtitleJustification j);
-    void setFramesPerSecond(int fps); //Timecode's default fps is 30
+    void setFramesPerSecond(float fps); //Timecode's default fps is 30
     void setFadeInterval(long milliseconds);
     
     //returns true if there are titles for this moment
-    bool setTimeInMillseconds(long milliseconds);
+    bool setTimeInMilliseconds(long milliseconds);
     bool setTimeInSeconds(float seconds);
     bool setTimeInFrames(int frames);
 
@@ -63,7 +63,7 @@ class ofxSubtitles {
     //void removeSubtitle(int subtitleNumber); 
     void draw(float x, float y);
     void draw(ofPoint point);
-    
+    long currentTime;
 	#ifdef USE_FTGL
     ofxFTGLFont font;
 	#else
@@ -74,7 +74,7 @@ class ofxSubtitles {
     string filepath;
     bool subsLoaded;
     long fadeTime; //In milliseconds
-    long currentTime; //In milliseconds
+    //long currentTime; //In milliseconds
     bool newTitle;
     
     ofBuffer srtFile;
