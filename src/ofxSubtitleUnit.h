@@ -3,7 +3,8 @@
 #pragma once
 
 #include "ofMain.h"
-#define MAX_LINES_PER_SUB_UNIT 2
+#include "ofxTimecode.h"
+//#define MAX_LINES_PER_SUB_UNIT 2
 
 enum ofxSubtitleJustification {
     TEXT_JUSTIFICATION_LEFT,
@@ -42,7 +43,7 @@ class ofxSubtitleUnit {
     
     inline friend ostream& operator<<(ostream& os, const ofxSubtitleUnit& su) {
         os << su.index << endl;
-        os << su.startTime << " --> " << su.endTime << endl;
+        os << ofxTimecode::timecodeForMillis(su.startTime, ",") << " --> " << ofxTimecode::timecodeForMillis(su.endTime, ",") << endl;
         
         for(int i = 0; i < su.text.size(); i++){
             os << su.text[i] << endl;

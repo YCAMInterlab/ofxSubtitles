@@ -43,20 +43,20 @@ long ofxSubtitleUnit::getEndTime(){
 }
 
 bool ofxSubtitleUnit::setTitles(vector<string> subtitleStrings){
-    if(subtitleStrings.size() < MAX_LINES_PER_SUB_UNIT){
+//    if(subtitleStrings.size() < MAX_LINES_PER_SUB_UNIT){
         text = subtitleStrings;
         return true;
-    }
-    return false;
+//    }
+//    return false;
 }
 
 
 bool ofxSubtitleUnit::addTitle(string subtitleString){
-    if(text.size() < MAX_LINES_PER_SUB_UNIT){
+//    if(text.size() < MAX_LINES_PER_SUB_UNIT){
         text.push_back(subtitleString);
         return true;
-    }
-    return false;
+//    }
+//    return false;
 }
 
 string ofxSubtitleUnit::removeTitle(int i){
@@ -75,12 +75,13 @@ vector<string>& ofxSubtitleUnit::getLines(){
 }
 
 void ofxSubtitleUnit::print(){
-    cout << index << endl;
-    cout << startTime << " --> " << endTime << endl;
-    
-    for(int i = 0; i < text.size(); i++){
-        cout << text[i] << endl;
-    }
-    
-    cout << endl;
+    cout << this;
+//    cout << index << endl;
+//    cout << startTime << " --> " << endTime << endl;
+//    
+//    for(int i = 0; i < text.size(); i++){
+//        cout << text[i] << endl;
+//    }
+//    
+//    cout << endl;
 }

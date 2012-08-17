@@ -43,55 +43,55 @@ bool ofxSubtitles::load(string path){
 	bool isSRTFile = ofToLower(ofFilePath::getFileExt(path)) == "srt";
     srtFile = ofBufferFromFile(path);
     subtitleList.clear();
-    
+    currentlyDisplayedSub = NULL;
     if(srtFile.size() == 0 || !isSRTFile){
         ofLogError("Invalid subtitle file path. Check to see if you misspelled the path, that the file does not exist, or that the file is not a .srt");
         subsLoaded = false;
         return false;
     }
-    else{
-        int lineNumber = 0;
 
-        while(!srtFile.isLastLine()){
-            
-            //Assign the subtitle unit its index number
-            string srtLine = srtFile.getNextLine();
-            lineNumber++;
-            
-            ofxSubtitleUnit title;
-            title.setIndex(ofToInt(srtLine));
-            
-            //Fill the new subtitle struct with its start and end times
-            lineNumber++;
-            srtLine = srtFile.getNextLine();
-            vector<string> times = ofSplitString(srtLine, " ");
+    int lineNumber = 0;
 
-            if(times.size() < 3){
-            	ofLogError("ofxSubtitles") << "Error parsing time from line " << srtLine << " in file " << path << " on line " << lineNumber << " with index " << title.getIndex() << endl;
-                break;
-            }
-            title.setStartTime(timecode.millisForTimecode(times[0]));
-            title.setEndTime(timecode.millisForTimecode(times[2]));
+    while(!srtFile.isLastLine()){
+        
+        //Assign the subtitle unit its index number
+        string srtLine = srtFile.getNextLine();
+        lineNumber++;
+        
+        ofxSubtitleUnit title;
+        title.setIndex(ofToInt(srtLine));
+        
+        //Fill the new subtitle struct with its start and end times
+        lineNumber++;
+        srtLine = srtFile.getNextLine();
+        vector<string> times = ofSplitString(srtLine, " ");
 
-            if(title.getStartTime() == -1 || title.getEndTime() == -1 || title.getStartTime() > title.getEndTime()){
-            	ofLogError("ofxSubtitles") << "Error parsing time from line " << srtLine << " in file " << path << " on line " << lineNumber << " with index " << title.getIndex() << endl;
-                break;
-            }
-            srtLine = srtFile.getNextLine();
-            lineNumber++;
-            
-            //Add each spoken line to the subtitle struct
-            while(!srtLine.empty()){
-                title.addTitle(srtLine);
-                srtLine = srtFile.getNextLine();
-                lineNumber++;
-            }
-            subtitleList.push_back(title);
+        if(times.size() < 3){
+            ofLogError("ofxSubtitles") << "Error parsing time from line " << srtLine << " in file " << path << " on line " << lineNumber << " with index " << title.getIndex() << endl;
+            break;
         }
+        title.setStartTime(timecode.millisForTimecode(times[0]));
+        title.setEndTime(timecode.millisForTimecode(times[2]));
+
+        if(title.getStartTime() == -1 || title.getEndTime() == -1 || title.getStartTime() > title.getEndTime()){
+            ofLogError("ofxSubtitles") << "Error parsing time from line " << srtLine << " in file " << path << " on line " << lineNumber << " with index " << title.getIndex() << endl;
+            break;
+        }
+        srtLine = srtFile.getNextLine();
+        lineNumber++;
+        
+        //Add each spoken line to the subtitle struct
+        while(!srtLine.empty()){
+            title.addTitle(srtLine);
+            srtLine = srtFile.getNextLine();
+            lineNumber++;
+        }
+        subtitleList.push_back(title);
     }
+    cout << "subtitles loaded " << subtitleList.size() << endl;
     
-    subsLoaded = true;
-    return true;
+    subsLoaded = subtitleList.size() > 0;
+    return subsLoaded;
 }
 
 bool ofxSubtitles::save(){
@@ -105,7 +105,7 @@ bool ofxSubtitles::save(string path){
     }
     ofBuffer saveBuffer;
 	ss >> saveBuffer;
-    cout << "buffer!! " << ss.str() << endl;
+//    cout << "buffer!! " << ss.str() << endl;
 	return ofBufferToFile(ofToDataPath(path), saveBuffer, false);
 }
 
@@ -242,37 +242,22 @@ void ofxSubtitles::draw(float x, float y){
 
     if(subsJustification == TEXT_JUSTIFICATION_LEFT && canDraw){
         
-        vector<string> subLines = currentlyDisplayedSub->getLines();
-        
+        vector<string>& subLines = currentlyDisplayedSub->getLines();
         for(int i = 0; i < subLines.size(); i++){
             textBounds = font.getStringBoundingBox(subLines[i], 0, 0);
-            
-            if(i == 0){
-                font.drawString(subLines[i], x - textBounds.width, y);
-            }
-            else{
-                font.drawString(subLines[i], x - textBounds.width, y + font.getLineHeight());
-            }
+            font.drawString(subLines[i], x - textBounds.width, y + font.getLineHeight()*i);
         }
         
     }
     else if(subsJustification == TEXT_JUSTIFICATION_CENTER && canDraw){
-        
-        vector<string> subLines = currentlyDisplayedSub->getLines();
-        
+        vector<string>& subLines = currentlyDisplayedSub->getLines();
         for(int i = 0; i < subLines.size(); i++){
             textBounds = font.getStringBoundingBox(subLines[i], 0, 0);
-            
-            if(i == 0){
-                font.drawString(subLines[i], x - textBounds.width/2, y);
-             
-            }
-            else{
-                font.drawString(subLines[i], x - textBounds.width/2, y + font.getLineHeight());
-            }
+            font.drawString(subLines[i], x - textBounds.width/2, y + font.getLineHeight()*i);
         }
         
     }
+    //TODO right justification
 //    else if(subsJustification == RIGHT && canDraw){
 //        
 //        vector<UTF8String> text = currentlyDisplayedSub.getLines();

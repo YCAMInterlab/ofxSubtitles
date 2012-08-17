@@ -23,7 +23,7 @@ ofxSubtitles& ofxTLSubtitleTrack::getSubtitles(){
 
 void ofxTLSubtitleTrack::loadSRT(string srtPath){
     clear();
-    
+
     if(subtitles.load(srtPath)){
         vector<ofxSubtitleUnit>& titles = subtitles.getSubtitles();
         for(int i = 0; i < titles.size(); i++){
@@ -43,20 +43,27 @@ void ofxTLSubtitleTrack::loadSRT(string srtPath){
 	timeline->flagTrackModified(this);
 }
 
-void ofxTLSubtitleTrack::saveSRT(string srtPath){
-    //pull current representation into SRT
-    
-	subtitles.save(srtPath);
+void ofxTLSubtitleTrack::reloadSRT(){
+    loadSRT(subtitles.getFilepath());
 }
 
+void ofxTLSubtitleTrack::mouseReleased(ofMouseEventArgs& args, long millis){
+    ofxTLSwitcher::mouseReleased(args, millis);
+    for(int i = 0; i < keyframes.size(); i++){
+        ofxTLSubtitle* title = (ofxTLSubtitle*)keyframes[i];
+        title->subtitleUnit->setStartTime(title->timeRange.min);
+        title->subtitleUnit->setEndTime(title->timeRange.max);
+    }
+}
 
-//void ofxTLSubtitleTrack::load(){
-//}
-//
-//void ofxTLSubtitleTrack::save(){
-//    ofxTLSwitcher::save();
-//}
+void ofxTLSubtitleTrack::saveSRT(){
+	subtitles.save();
+}
 
+void ofxTLSubtitleTrack::saveSRT(string srtPath){
+    //pull current representation into SRT
+	subtitles.save(srtPath);
+}
 
 ofxTLKeyframe* ofxTLSubtitleTrack::newKeyframe(){
 	ofxTLSubtitle* newTitle = new ofxTLSubtitle();
@@ -73,8 +80,8 @@ void ofxTLSubtitleTrack::restoreKeyframe(ofxTLKeyframe* key, ofxXmlSettings& xml
     ofxTLSubtitle* title = (ofxTLSubtitle*)key;
     title->subtitleUnit->setStartTime(title->timeRange.min);
     title->subtitleUnit->setEndTime(title->timeRange.max);
-    title->subtitleUnit->addTitle(xmlStore.getValue("title1", ""));
-    title->subtitleUnit->addTitle(xmlStore.getValue("title2", ""));
+//    title->subtitleUnit->addTitle(xmlStore.getValue("title1", ""));
+//    title->subtitleUnit->addTitle(xmlStore.getValue("title2", ""));
 }
 
 void ofxTLSubtitleTrack::storeKeyframe(ofxTLKeyframe* key, ofxXmlSettings& xmlStore){

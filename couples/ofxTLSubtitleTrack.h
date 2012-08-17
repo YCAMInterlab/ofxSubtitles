@@ -26,8 +26,12 @@ class ofxTLSubtitleTrack : public ofxTLSwitcher {
     //access this to load the font
     ofxSubtitles& getSubtitles();
     
+    virtual void mouseReleased(ofMouseEventArgs& args, long millis);
+    
     virtual void loadSRT(string srtPath);
+    virtual void reloadSRT(); //in case you are editing externally
     virtual void saveSRT(string srtPath);
+    virtual void saveSRT();
     
 //    virtual void load();
 //	virtual void save();

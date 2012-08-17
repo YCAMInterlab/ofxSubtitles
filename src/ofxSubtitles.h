@@ -34,10 +34,13 @@ class ofxSubtitles {
     bool load(string path); //Constructs subtitle vector
     bool save();  //saves any changes to the same file that was load
     bool save(string path); //saves changes to a new file, does not affect filePath
-    
+        
+    int getNumTitles();
+
     vector<ofxSubtitleUnit>& getSubtitles();
     
     ofxSubtitleUnit* addSubtitle(long startTime, long endTime, string titleLine1, string titleLine2);
+    ofRectangle getTextBoundingRect();
     
     void setJustification(ofxSubtitleJustification j);
     void setFramesPerSecond(float fps); //Timecode's default fps is 30
@@ -53,7 +56,9 @@ class ofxSubtitles {
     
     //will return true once the very first time after a new title has been st
     bool isTitleNew();
-
+	bool isShowingTitle();
+	
+    
     string getFilepath();
     
     //Creates a basic, non-bolded/italicized/underlined subtitle
@@ -63,15 +68,13 @@ class ofxSubtitles {
     //void removeSubtitle(int subtitleNumber); 
     void draw(float x, float y);
     void draw(ofPoint point);
+    
     long currentTime;
 	#ifdef USE_FTGL
     ofxFTGLFont font;
 	#else
     ofTrueTypeFont font;
 	#endif
-    
-
-    int getNumTitles();
     
   protected:
 
