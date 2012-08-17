@@ -19,6 +19,7 @@
 ofxSubtitles::ofxSubtitles(){
     currentlyDisplayedSub = NULL;
     subsLoaded = false;
+    subsJustification = TEXT_JUSTIFICATION_CENTER;
 }
 
 void ofxSubtitles::setup(string fontPath, int fontSize, int fps, ofxSubtitleJustification j){
@@ -239,23 +240,26 @@ void ofxSubtitles::draw(ofPoint point){
 void ofxSubtitles::draw(float x, float y){
     
     bool canDraw = font.isLoaded() && currentlyDisplayedSub != NULL;
-
-    if(subsJustification == TEXT_JUSTIFICATION_LEFT && canDraw){
-        
-        vector<string>& subLines = currentlyDisplayedSub->getLines();
-        for(int i = 0; i < subLines.size(); i++){
-            textBounds = font.getStringBoundingBox(subLines[i], 0, 0);
-            font.drawString(subLines[i], x - textBounds.width, y + font.getLineHeight()*i);
-        }
-        
+	if(!canDraw){
+        return;
     }
-    else if(subsJustification == TEXT_JUSTIFICATION_CENTER && canDraw){
-        vector<string>& subLines = currentlyDisplayedSub->getLines();
-        for(int i = 0; i < subLines.size(); i++){
-            textBounds = font.getStringBoundingBox(subLines[i], 0, 0);
-            font.drawString(subLines[i], x - textBounds.width/2, y + font.getLineHeight()*i);
+    vector<string>& subLines = currentlyDisplayedSub->getLines();
+    
+    //add 1/2 the line height in the case of only one line, which works for making
+    //1 and 2 line subtitle films look much nicer
+	float centerOneLineAddition = 0;
+    if(subLines.size() == 1){
+        centerOneLineAddition = font.getLineHeight()*.5;
+    }
+    
+    for(int i = 0; i < subLines.size(); i++){
+        textBounds = font.getStringBoundingBox(subLines[i], 0, 0);
+	    if(subsJustification == TEXT_JUSTIFICATION_LEFT){
+            font.drawString(subLines[i], x - textBounds.width, y + font.getLineHeight()*i + centerOneLineAddition);
         }
-        
+	    else if(subsJustification == TEXT_JUSTIFICATION_CENTER){
+            font.drawString(subLines[i], x - textBounds.width/2, y + font.getLineHeight()*i + centerOneLineAddition);
+        }
     }
     //TODO right justification
 //    else if(subsJustification == RIGHT && canDraw){
